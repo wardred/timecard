@@ -1,2 +1,2 @@
 # timecard
-A very simple MySQL/HTML/PHP timecard app for volunteers.
+A very simple MySQL/HTML/PHP timecard web application for volunteers.
