@@ -13,11 +13,11 @@ $request=NULL;
 if( ( isset($_GET['checkin']) && $_GET['checkin'] == 'true') ||
     ( isset($_POST['request']) && $_POST['request'] == 'checkin') ){
   ?> <h1><a href="index.php">FreeGeek</a> - 
-      <a href="checkin.php?checkin=true">Time Clock</a></h1> <?php
+      <a href="user.php?checkin=true">Time Clock</a></h1> <?php
   $request="checkin";
 } else { # Should probably make this part of the if else blocks below
   ?> <h1><a href="index.php">FreeGeek</a> - 
-      <a href="checkin.php?hours=true">Time Clock</a></h1> <?php
+      <a href="user.php?hours=true">Time Clock</a></h1> <?php
   $request="hours";
 }
 

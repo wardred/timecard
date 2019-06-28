@@ -16,12 +16,12 @@
     </div>
 
     <div class="item3">
-      <a href="checkin.php?checkin=true">Check In /<br>Check Out</a>
+      <a href="user.php?checkin=true">Check In /<br>Check Out</a>
     </div>
-    <div class="item4"><a href="checkin.php?checkin=true">Or Lookup Account</a></div>
+    <div class="item4"><a href="user.php?checkin=true">Or Lookup Account</a></div>
 
     <div class="item5">
-      <a href="checkin.php?hours=yes">Check Hours</a>
+      <a href="user.php?hours=yes">Check Hours</a>
     </div>
     <div class="item6">
       <a href="management.php">Management</a>

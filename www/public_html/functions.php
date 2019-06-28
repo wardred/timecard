@@ -193,7 +193,7 @@ function punch_check_status( $conn, $userid, $job, $punch, $request ) {
 
 function display_checkin_form() { ?>
     <form method="post"
-          action="/checkin.php">
+          action="/user.php">
       Username: <input type="text" name="username" tabindex="1"
                        autofocus="autofocus">
     </form>
