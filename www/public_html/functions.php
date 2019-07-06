@@ -71,67 +71,6 @@ function insert_user($conn, $data) {
   $stmt->execute();
 }
 
-
-# Lookup a user
-# Display the punch in form,
-# and a button to lookup the user again if the incorrect user is displayed.
-function lookup($conn, $data, $request) {
-  // prepare sql and bind parameters
-  $stmt = $conn->prepare("SELECT username, first_name, last_name
-                          FROM users
-                          WHERE username = :username;");
-  $stmt->bindParam(':username', $data);
-  $stmt->execute();
-  $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  $username="";
-
-  if( isset($result['username']) ) {
-    $jobs = get_jobs($conn);
-    echo '<div class="user_container">';
-    if( isset($result['username']) ) {
-      $username=$result['username'];
-      echo '<div class="userinfo">Username: ' . $username . '</div>';
-    }
-    if( isset($result['first_name']) ) {
-      $first_name=$result['first_name'];
-      echo '<div class="userinfo">First Name: ' . $first_name . '</div>';
-    }
-    if( isset($result['last_name']) ) {
-      $last_name=$result['last_name'];
-      echo '<div class="userinfo">Last Name: ' . $last_name . '</div>';
-    } ?>
-    </div>
-    <?php $punched_in = punch_check_status($conn, $username, 1, FALSE,
-                                           $request);
-     ?>
-    <div class="punchin">If this is you
-            <form method="post" action="<?php
-                  echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-              <?php if ($punched_in == "Clocked out") { ?>
-              Select a job: 
-              <select name="job" autofocus="autofocus">
-                <option disabled selected value>Select an Option </option>
-                <?php echo $jobs; ?>
-              </select> <?php } ?>
-              <input type="hidden" value="<?php echo $username; ?>"
-                     name="punchname">
-              <?php if($punched_in == "Clocked out") { ?>
-                <input type="submit" value="Punch IN" name="punch">
-              <?php } else { ?>
-                <input type="hidden" value="1" name="job">
-                <input type="submit" value="Punch OUT" name="punch">
-                <input type="hidden" value="<?php echo $request;?>"
-                       name="request">
-              <?php } ?>
-            </form>
-          </div>
-          <?php display_lookup_form();
-  } else {
-    throw new Exception(display_checkin_form() .
-          '<br><div class="error">Could not find user: ' . $data . '</div>');
-  }
-}
-
 # The logic for checking statusor punching in are almost the same.
 # If $punch is TRUE, punchin.  If not just return user's status.
 function punch_check_status( $conn, $userid, $job, $punch, $request ) {
@@ -214,7 +153,7 @@ function display_lookup_form($request) { ?>
   <h1>User Lookup:</h1>
   <div class="form_container">
     <form method="post"
-          action="<?php htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+          action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
       <div class="labels">User Name:</div>
       <div class="inputs"><input type="text" name="username" tabindex="1" autofocus="autofocus">*</div><br>
       <div class="labels">First Name:</div>
@@ -392,6 +331,29 @@ function display_user_selection($conn, $users, $request) {
   echo '</table></form>';
 }
 
+function display_management_user_selection($conn, $users, $request) { ?>
+  <form method="post"
+        action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+  <input type="hidden" name="users" value="true">
+  <h2>Choose User to Edit:</h2>
+  <table>
+  <?php
+  foreach($users as &$user){
+    echo "<tr>";
+      //echo '<input type="hidden" name="id" value="' . $user['id'] . '"></td>';
+      echo '<td>' . $user['first_name'] . '</td>';
+      echo '<td>' . $user['last_name'] . '</td>';
+      echo '<td><button type="submit" name="edit" value="' . $user['id'] .
+        '">Edit</button></td>';
+      echo '<td><button type="submit" name="hours" value="' . $user['id'] .
+        '">Lookup / Change Hours</button></td>';
+      echo '<td><button type="submit" name="logout" value="' . $user['id'] .
+        '">Logout</button></td>'; # Need to lookup if they're logged in, put in an IF statement.
+    echo "</tr>";
+  }
+  echo "</table></form>";
+}
+
 function get_hours($conn, $userid, $request){
 $check_range = array("1000 YEAR", "1 DAY", "1 WEEK", "1 MONTH", "1 YEAR");
 $results = array();
@@ -415,7 +377,6 @@ $results = array();
       WHERE t.user_id = :userid
       AND t.job_id = j.id
       AND time_in > CAST( DATE_SUB(CURDATE()," .
-        #"INTERVAL :range )
         "INTERVAL :number " . $term . "
         ) AS DATETIME )
       GROUP BY t.job_id");
@@ -423,10 +384,6 @@ $results = array();
     $count=0;
     $stmt->bindParam(':userid', $userid);
     $stmt->bindParam(':number', $number, PDO::PARAM_INT);
-    #$stmt->bindParam(':term', $term);
-    #$stmt->bindParam(":range", $range, PDO::PARAM_STR, strlen($range));
-    #echo "<h1>userid: " . $userid . "</h1>";
-    #echo "<h1>range: "  . $range  . "</h1>";
     try{
       $stmt->execute();
     } catch (Exception $e){
@@ -465,22 +422,161 @@ function display_time($seconds){
   #$difference = $now->diff($now->add($interval))->format('%a days, %h hours, %i minutes, %s seconds');
   return $difference;
 }
-/*
-SELECT DATE_FORMAT( DATE('1970-12-31 23:59:59') +
-INTERVAL sum( TIMESTAMPDIFF(SECOND, time_in, time_out)) SECOND,
-'%y years %m months %j days %Hh:%im:%ss')
-AS diff
-FROM timecards WHERE user_id = 1 GROUP BY job_id
-*/
 
-/* THIS ONE I THINK
-SELECT j.name as Name,
-       sum( TIMESTAMPDIFF(SECOND, time_in, time_out)) AS Seconds
-FROM timecards t, jobs j
-WHERE t.user_id = 1
-AND t.job_id = j.id
-AND time_in > CAST( DATE_SUB(CURDATE(),
-                    INTERVAL 6 DAY)
-              AS DATETIME )
-GROUP BY t.job_id */
+function edit($conn, $userid, $reedit){
+  $stmt = $conn->prepare("SELECT username, first_name, last_name,
+                                 phone, email, orig_id, photo_filename,
+                                 active, id
+                          FROM users where id = :userid");
+  $stmt->bindParam(':userid',$userid);
+  $stmt->execute();
+  $results=$stmt->fetch(PDO::FETCH_ASSOC); ?>
+
+<?php if(! $reedit) {
+  echo '<div class="warn">The user edit form was submitted,
+         but nothing was changed.</div>';
+}?>
+<h1>Edit User:</h1>
+<form method="post" action="<?php
+  echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+
+  <!-- Get the original values.  When submitting form
+       compare original values to edited values and only
+       update those that are different.  -->
+  <input type="hidden" name="orig_userid"
+         value="<?php echo $results['id'];?>">
+  <input type="hidden" name="orig_username"
+         value="<?php echo $results['username'];?>">
+  <input type="hidden" name="orig_first_name"
+         value="<?php echo $results['first_name'];?>">
+  <input type="hidden" name="orig_last_name"
+         value="<?php echo $results['last_name'];?>">
+  <input type="hidden" name="orig_phone"
+         value="<?php echo $results['phone'];?>">
+  <input type="hidden" name="orig_orig_id"
+         value="<?php echo $results['orig_id'];?>">
+  <input type="hidden" name="orig_email"
+         value="<?php echo $results['email'];?>">
+  <input type="hidden" name="orig_active"
+         value="<?php if($results['active']){ echo 'true'; }
+                      else{echo 'false';}?>">
+  <input type="hidden" name="userid" value="<?php echo $userid;?>">
+
+  <!-- The form with user data filled out. -->
+  <div class="input_wrapper">
+    <div class="label">Username: </div>
+      <div class="input"><input type="text" name="username"
+           value="<?php echo $results['username'];?>"></div>
+  </div>
+  <div class="input_wrapper">
+    <div class="label">First Name: </div>
+      <input type="text" name="first_name"
+             value="<?php echo $results['first_name'];?>">
+  </div>
+  <div class="input_wrapper">
+    <div class="label">Last Name: </div>
+      <input type="text" name="last_name"
+             value="<?php echo $results['last_name'];?>">
+  </div>
+  <div class="input_wrapper">
+    <div class="label">Password: </div>
+    <input type="text" name="password"
+           value="">
+  </div>
+  <div class="input_wrapper">
+    <div class="label">Phone: </div>
+    <input type="text" name="phone"
+           value="<?php echo $results['phone'];?>">
+  </div>
+  <div class="input_wrapper">
+    <div class="label">E-mail: </div>
+      <input type="text" name="email"
+           value="<?php echo $results['email'];?>">
+  </div>
+  <div class="input_wrapper">
+    <div class="label">orig_id: </div>
+      <input type="text" name="orig_id"
+           value="<?php echo $results['orig_id'];?>">
+  </div>
+  <div class="input_wrapper">
+    <div class="label">active: </div>
+      <input type="checkbox" name="active" value="active" <?php
+      if($results['active'] == TRUE) {
+        echo "checked ";} ?>>
+  </div>
+  <input type="hidden" name="edit_submitted" value="true">
+  <input type="submit">
+</form>
+<?php
+}
+
+function update_user($conn, $post) {
+  // Build array of values to update
+  $updates=NULL;
+  if( $post['username'] != $post['orig_username'] ) {
+    $updates['username'] = $post['username'];
+  }
+  if( $post['first_name'] != $post['orig_first_name'] ) {
+    $updates['first_name'] = $post['first_name'];
+  }
+  if( $post['last_name'] != $post['orig_last_name'] ) {
+    $updates['last_name'] = $post['last_name'];
+  }
+  if( $post['password'] ) {
+    $updates['password'] = $post['password'];
+  }
+  if( $post['phone'] != $post['orig_phone'] ) {
+    $updates['phone'] = $post['phone'];
+  }
+  if( $post['email'] != $post['orig_email'] ) {
+    $updates['email'] = $post['email'];
+  }
+  if( $post['orig_id'] != $post['orig_orig_id'] ) {
+    $updates['email'] = $post['email'];
+  }
+  if( (isset($post['active']) && $post['orig_active'] == 'false') ||
+      ((! isset($post['active']) && $post['orig_active'] == 'true') )){
+    if(isset($post['active'])){
+      $updates['active'] = 'TRUE';
+    } else {
+      $updates['active'] = 'FALSE';
+    }
+  }
+
+  // If nothing was changed, redisplay the edit form
+  if(! $updates) {
+    edit($conn, $post['orig_userid'], false);
+    return;
+  }
+
+  // Build the prepared statement SQL
+  $sql = "UPDATE users SET ";
+  $count=sizeof($updates);
+  foreach( array_keys($updates) as $key){
+    $sql .= $key . " = :$key";
+    $count--;
+
+    // If we aren't at the last parameter, the SQL needs a comma.
+    if($count > 0){
+      $sql .= ", ";
+    }
+  }
+  $sql .= " WHERE id = " . $post['orig_userid'];
+  $stmt = $conn->prepare($sql);
+
+  // The SQL is generated, now need to bind the parameters
+  foreach( array_keys($updates) as $key){
+    // Handle MySQL boolean
+    if($key == "active"){
+      if( $updates[$key] == "TRUE" ){
+        $updates[$key] = 1;
+      } else {
+        $updates[$key] = 0;
+      }
+    }
+    $stmt->bindParam(':' . $key, $updates[$key]);
+  }
+
+  return ($stmt->execute());
+}
 ?>

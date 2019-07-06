@@ -50,7 +50,6 @@ CREATE TABLE roles (
   name        VARCHAR(255) NOT NULL UNIQUE,
   description VARCHAR(255),
   active      BOOLEAN NOT NULL DEFAULT TRUE,
-  main        BOOLEAN NOT NULL,
   PRIMARY KEY(id),
   KEY(name)
 );
@@ -75,6 +74,7 @@ CREATE TABLE timecards(
 CREATE TABLE role_to_user(
 	role_id   INT NOT NULL,
   user_id   INT NOT NULL,
+  main      BOOLEAN NOT NULL,
   KEY (role_id),
   KEY (user_id),
   FOREIGN KEY (role_id) REFERENCES roles(id),

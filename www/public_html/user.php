@@ -4,7 +4,9 @@
 ?>
 <html lang="en">
 <head>
-  <title>FreeGeek Timecard Check In</title>
+  <title>FreeGeek Timecard User Screen</title>
+  <meta http-equiv="refresh"
+        content="180;url=http://timecard.freegeektwincities.org/index.php">
 </head>
 <body>
 <?php
@@ -13,11 +15,17 @@ $request=NULL;
 if( ( isset($_GET['checkin']) && $_GET['checkin'] == 'true') ||
     ( isset($_POST['request']) && $_POST['request'] == 'checkin') ){
   ?> <h1><a href="index.php">FreeGeek</a> - 
-      <a href="user.php?checkin=true">Time Clock</a></h1> <?php
+      <a href="user.php?checkin=true">Time Clock</a></h1>
+  <div>Not checking in?
+       <a href="index.php">Return to the Free Geek Timecard Homepage.</a>
+  </div> <?php
   $request="checkin";
 } else { # Should probably make this part of the if else blocks below
   ?> <h1><a href="index.php">FreeGeek</a> - 
-      <a href="user.php?hours=true">Time Clock</a></h1> <?php
+      <a href="user.php?hours=true">Time Clock</a></h1>
+  <div>Not checking hours?
+       <a href="index.php">Return to the Free Geek Timecard Homepage.</a>
+  </div> <?php
   $request="hours";
 }
 
@@ -67,72 +75,6 @@ if( $_SERVER["REQUEST_METHOD"] != "POST" ) {
     display_lookup_form($request);
   }
   unset($_POST['lookup']);
-}
-
-/*
-# No form data entered
-if( $_SERVER["REQUEST_METHOD"] != "POST" ) {
-  # display_checkin_form();
-  $users = display_lookup_form();
-
-# Username submitted, need to confirm correct user.
-} elseif (isset($_POST['username']) && (! isset($_POST['lookup'])) ) {
-  $username = strtolower(test_input($_POST['username']));
-
-  if($username){
-    try {
-      lookup($conn, $username);
-    } catch(Exception $e) {
-      echo $e->getMessage();
-    }
-  } else {
-    echo '<div class="error">Username is required!</div>';
-    display_checkin_form();
-    display_lookup_form();
-  }
-
-# User lookup form submitted
-} elseif( isset($_POST['lookup']) ) {
-  if(isset($user_data['username'])){
-    $user_data['username']   = strtolower(test_input($_POST["username"]));
-  }
-  $user_data['first_name'] = test_input($_POST["first_name"]);
-  $user_data['last_name']  = test_input($_POST["last_name"]);
-  $user_data['email']      = test_input($_POST["email"]);
-  $user_data['phone_area_code']      = test_input($_POST["phone_area_code"]);
-  $user_data['phone_prefix']         = test_input($_POST["phone_prefix"]);
-  $user_data['phone_last_four']      = test_input($_POST["phone_last_four"]);
-
-  # Concatenate the 3 phone nunber fields into 1 number.
-  if( isset( $user_data['phone_area_code']) &&
-      isset( $user_data['phone_prefix']) &&
-      isset( $user_data['phone_last_four'] ) ){
-    $user_data['phone'] = (int) $user_data['phone_area_code'] .
-                                $user_data['phone_prefix'] .
-                                $user_data['phone_last_four'];
-    }
-
-  lookup_user($conn, $user_data);
-
-# The punch button was pressed
-} elseif ( isset($_POST['punchname']) ) {
-  if(! isset($_POST['job'])) {
-    echo '<div class="error">You must select a job.</div>';
-  } else {
-    $status = punch_check_status($conn, $_POST['punchname'],
-              $_POST['job'], TRUE);
-
-    if( $status == "New User!") {
-      echo "Hello new user!";
-    } elseif( $status == "Clocked out") {
-      echo "You were clocked out.  Clocking in.";
-    } elseif( $status == "Clocked in") {
-      echo "You were clocked in.  Clocking out.";
-    }
-  }
-  display_checkin_form();
-  display_lookup_form();
-}
-*/?>
+} ?>
 </body>
 </html>
