@@ -6,7 +6,7 @@
 <head>
   <title>FreeGeek New User Form</title>
   <meta http-equiv="refresh"
-        content="180;url=http://timecard.freegeektwincities.org/index.php">
+        content="180; url=http://timecard.freegeektwincities.org/index.php">
 </head>
 <body>
   <div class="head"><h1><a href="index.php">FreeGeek</a> - 
@@ -20,9 +20,9 @@
           action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
       <div class="labels-red">* - Required Fields</div><br>
       <div class="labels">User Name:</div>
-      <div class="inputs"><input type="text" name="username" tabindex="1" autofocus="autofocus">*</div><br>
+      <div class="inputs"><input type="text" name="username" tabindex="1" autofocus="autofocus" required>*</div><br>
       <div class="labels">First Name:</div>
-      <div class="inputs"><input type="text" name="first_name" tabindex="2">*</div><br>
+      <div class="inputs"><input type="text" name="first_name" tabindex="2" required>*</div><br>
       <div class="labels">Last Name:</div>
       <div class="inputs"><input type="text" name="last_name" tabindex="3"></div><br>
       <div class="labels">E-mail:</div>
@@ -31,7 +31,7 @@
       <div class="inputs">(<input type="text" name="phone_area_code"
                                   maxlength="3" tabindex="5" size="3">)
                           <input type="text" name="phone_prefix" maxlength="3"
-                                 tabindex="6" size="3">-
+                                 tabindex="6" size="3"> - 
                           <input type="text" name="phone_last_four"
                                  maxlength="4" tabindex="7" size="4"></div><br>
       <div class="inputs"><input type="submit" tabindex="8"></div>

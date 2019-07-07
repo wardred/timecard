@@ -163,22 +163,25 @@ function display_lookup_form($request) { ?>
       <div class="labels">E-mail:</div>
       <div class="inputs"><input type="text" name="email" tabindex="4"></div><br>
       <div class="labels">Phone:</div>
-      <div class="inputs"><input type="text" name="phone_area_code" maxlength="3" tabindex="5">
-                          <input type="text" name="phone_prefix" maxlength="3" tabindex="6">
-                          <input type="text" name="phone_last_four" maxlength="4" tabindex="7"></div><br>
+      <div class="inputs">(<input type="text" name="phone_area_code"
+           maxlength="3" tabindex="5" size="3">)
+                          <input type="text" name="phone_prefix" maxlength="3"
+           tabindex="6" size="3"> - 
+                          <input type="text" name="phone_last_four"
+           maxlength="4" tabindex="7" size="4"></div><br>
       <div class="inputs"><input type="submit" tabindex="8"></div>
       <input type="hidden" name="lookup" value="TRUE">
       <input type="hidden" name="request" value="<?php echo $request; ?>">
     </form>
   </div>
-
 <?php
 }
 
 function lookup_user($conn, $user_data, $request) {
   $_POST['request'] = $request;
   $param_count = 0;
-  $query = "SELECT id, username, first_name, last_name, email, phone
+  $query = "SELECT id, username, first_name, last_name, email, phone,
+            active
             FROM users
             WHERE ";
 
@@ -264,19 +267,26 @@ function lookup_user($conn, $user_data, $request) {
     $results[$count]['first_name'] = $row['first_name'];
     $results[$count]['last_name']  = $row['last_name'];
 
-    if(! ( isset($row['email']) &&
-        $row['email'] == $user_data['email'] ) ) {
-      $results[$count]['email'] = NULL;
-    } else {
+    # Display e-mail if management or user input matches database
+    if( $request == 'management' ||
+      ( isset($row['email']) &&
+         $row['email'] == $user_data['email']) ) {
       $results[$count]['email'] = $row['email'];
+    } else {
+      $results[$count]['email'] = NULL;
     }
 
-    if(! ( isset($row['phone']) &&
-        $row['phone'] == $user_data['phone'] ) ) {
-      $results[$count]['phone'] = NULL;
-    } else {
+    # Display phone if management or user input matches database
+    if( $request == 'management' ||
+      ( isset($row['phone']) &&
+        $row['phone'] == $user_data['phone']) ) {
       $results[$count]['phone'] = $row['phone'];
+    } else {
+      $results[$count]['phone'] = NULL;
     }
+    if($row['active'] == '1'){
+      $results[$count]['active'] = 'true';
+    } else { $results[$count]['active'] = 'false';}
    $count++;
   }
   return $results;
@@ -341,8 +351,17 @@ function display_management_user_selection($conn, $users, $request) { ?>
   foreach($users as &$user){
     echo "<tr>";
       //echo '<input type="hidden" name="id" value="' . $user['id'] . '"></td>';
+      echo '<td>' . $user['username'] . '</td>';
       echo '<td>' . $user['first_name'] . '</td>';
       echo '<td>' . $user['last_name'] . '</td>';
+      if($user['phone']){
+        echo '<td>(' . substr($user['phone'],0,3) . ') ' .
+                       substr($user['phone'],3,3) . '-' .
+                       substr($user['phone'],6,4) . '</td>';
+      } else { echo '<td></td>'; }
+      echo '<td>' . $user['email'] . '</td>';
+      if($user['active'] == 'true'){ echo '<td>Active</td>';
+      } else { echo "<td>Inactive</td>"; }
       echo '<td><button type="submit" name="edit" value="' . $user['id'] .
         '">Edit</button></td>';
       echo '<td><button type="submit" name="hours" value="' . $user['id'] .
@@ -390,11 +409,9 @@ $results = array();
       $stmt->debugDumpParams(); echo "<br><br>";
     }
     echo "<table style='border-style:solid;border-color:black;border-width:2px'><caption>" . $first['first_name'] . "'s Hours</caption>";
-    echo "<tr><th>Span</th><th>Job</th><th>Hours</th></tr>";
+    echo "<tr><th>Time Span</th><th>Job</th><th>Hours</th></tr>";
     $total=0;
     while ( $results[$count] = $stmt->fetch(PDO::FETCH_ASSOC) ) {
-      #echo "<h1>SECONDS!". $results[$count]['Name'] . " " .
-      #                     $results[$count]['Seconds'] . "</h1>";
       echo "<tr><td>";
       if($count == 0){
         echo $range;
@@ -408,6 +425,12 @@ $results = array();
       echo "</td>" .
             "</tr>";
       $count++;
+    }
+
+    # If there weren't any hours in the given $range
+    if($total == 0) {
+      echo "<tr><td>$range</td>
+                <td colspan='2'>No data found in given time span.</td></tr>";
     }
     echo "<tr><td>Total</td><td colspan='2'>" . display_time($total) . "</td>";
     echo "</table>";
@@ -425,8 +448,7 @@ function display_time($seconds){
 
 function edit($conn, $userid, $reedit){
   $stmt = $conn->prepare("SELECT username, first_name, last_name,
-                                 phone, email, orig_id, photo_filename,
-                                 active, id
+                                 phone, email, active, id
                           FROM users where id = :userid");
   $stmt->bindParam(':userid',$userid);
   $stmt->execute();
@@ -453,8 +475,6 @@ function edit($conn, $userid, $reedit){
          value="<?php echo $results['last_name'];?>">
   <input type="hidden" name="orig_phone"
          value="<?php echo $results['phone'];?>">
-  <input type="hidden" name="orig_orig_id"
-         value="<?php echo $results['orig_id'];?>">
   <input type="hidden" name="orig_email"
          value="<?php echo $results['email'];?>">
   <input type="hidden" name="orig_active"
@@ -494,11 +514,6 @@ function edit($conn, $userid, $reedit){
            value="<?php echo $results['email'];?>">
   </div>
   <div class="input_wrapper">
-    <div class="label">orig_id: </div>
-      <input type="text" name="orig_id"
-           value="<?php echo $results['orig_id'];?>">
-  </div>
-  <div class="input_wrapper">
     <div class="label">active: </div>
       <input type="checkbox" name="active" value="active" <?php
       if($results['active'] == TRUE) {
@@ -512,6 +527,7 @@ function edit($conn, $userid, $reedit){
 
 function update_user($conn, $post) {
   // Build array of values to update
+  global $_POST;
   $updates=NULL;
   if( $post['username'] != $post['orig_username'] ) {
     $updates['username'] = $post['username'];
@@ -531,9 +547,6 @@ function update_user($conn, $post) {
   if( $post['email'] != $post['orig_email'] ) {
     $updates['email'] = $post['email'];
   }
-  if( $post['orig_id'] != $post['orig_orig_id'] ) {
-    $updates['email'] = $post['email'];
-  }
   if( (isset($post['active']) && $post['orig_active'] == 'false') ||
       ((! isset($post['active']) && $post['orig_active'] == 'true') )){
     if(isset($post['active'])){
@@ -546,7 +559,7 @@ function update_user($conn, $post) {
   // If nothing was changed, redisplay the edit form
   if(! $updates) {
     edit($conn, $post['orig_userid'], false);
-    return;
+    return "resubmit";
   }
 
   // Build the prepared statement SQL
@@ -561,7 +574,7 @@ function update_user($conn, $post) {
       $sql .= ", ";
     }
   }
-  $sql .= " WHERE id = " . $post['orig_userid'];
+  $sql .= " WHERE id = :id";
   $stmt = $conn->prepare($sql);
 
   // The SQL is generated, now need to bind the parameters
@@ -576,7 +589,23 @@ function update_user($conn, $post) {
     }
     $stmt->bindParam(':' . $key, $updates[$key]);
   }
+  $stmt->bindParam(":id", $post['orig_userid']);
+
+  $_POST['edit_submitted'] = true;
 
   return ($stmt->execute());
+}
+
+function display_logout_all() {?>
+  <form method="post" action="management.php">
+    <button type="submit" name="logout_all" value='true'>
+     Log Everybody Out</button>
+  </form>
+<?php }
+
+function log_everybody_out($conn) {
+  # Should be wrapped in a try/catch
+  $conn->query("UPDATE timecards SET time_out = now()
+                WHERE time_out IS NULL");
 }
 ?>

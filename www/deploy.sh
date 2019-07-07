@@ -22,5 +22,6 @@
 
 SOURCE="$( cd "$(dirname "$0")" ; pwd -P )/public_html/"
 DESTINATION="/sites/freegeek_timecard/public_html"
+#DESTINATION="173.255.192.58:/sites/freegeek_timecard/public_html"
 
 rsync -avrlpAog --exclude '*.swp' --del "${SOURCE}" "${DESTINATION}"

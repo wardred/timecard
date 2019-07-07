@@ -21,18 +21,28 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
     echo "If you don't see the user you're looking for search again.";
     display_management_user_selection($conn, $users, "lookup");
   }
+  display_logout_all();
   display_lookup_form("management");
 } elseif( isset($_POST['edit']) ){
   edit($conn, $_POST['edit'], true);
 } elseif( isset($_POST['edit_submitted']) ){
-  if(update_user($conn, $_POST)){
+  $updated = update_user($conn, $_POST);
+  if( isset($updated) && ( $updated === "resubmit") ) {
+    # Do nothing
+  } elseif ( isset($updated) ){
     echo '<div class="info">User Updated</div>';
   } else {
     echo '<div class="warn">Something went wrong.
           Let the timecard maintainer know.</div>';
   }
+} elseif( isset($_POST['logout_all']) ){
+  log_everybody_out($conn);
+  echo '<div class="info">Everybody logged out.</div>';
+  display_logout_all();
+  display_lookup_form($request);
 } elseif(! $request ) {
   $request="management";
+  display_logout_all();
   display_lookup_form($request);
 }
 ?>
