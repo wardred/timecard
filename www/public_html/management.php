@@ -40,6 +40,20 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
   echo '<div class="info">Everybody logged out.</div>';
   display_logout_all();
   display_lookup_form($request);
+} elseif( $_SERVER['REQUEST_METHOD'] == "POST" &&
+          isset($_POST['logout']) ) {
+  $jobid = "job_" . $_POST['logout'];
+  $job=NULL;
+  if( isset($_POST[$jobid]) ) {
+    $job=$_POST[$jobid];
+  }
+  $status = punch_check_status($conn, $_POST['logout'], $job, TRUE,
+        $request);
+  if($status == "New User!" || $status == "Clocked in") {
+    echo "<h1>Clocked in.</h1>";
+  } else {
+    echo "<h1>Clocked out.</h1>";
+  }
 } elseif(! $request ) {
   $request="management";
   display_logout_all();

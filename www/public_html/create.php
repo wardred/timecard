@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_data['phone'] = (int) $user_data['phone_area_code'] .
                                 $user_data['phone_prefix'] .
                                 $user_data['phone_last_four'];
-  }
+  } else { $user_data['phone'] = NULL; }
 
   insert_user($conn, $user_data);
 echo "Username: "   . $user_data['username']   . "<br>

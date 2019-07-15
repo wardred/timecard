@@ -71,7 +71,7 @@ function insert_user($conn, $data) {
   $stmt->execute();
 }
 
-# The logic for checking statusor punching in are almost the same.
+# The logic for checking status or punching in are almost the same.
 # If $punch is TRUE, punchin.  If not just return user's status.
 function punch_check_status( $conn, $userid, $job, $punch, $request ) {
   $_POST['request'] = $request;
@@ -343,7 +343,7 @@ function display_user_selection($conn, $users, $request) {
 
 function display_management_user_selection($conn, $users, $request) { ?>
   <form method="post"
-        action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+        action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
   <input type="hidden" name="users" value="true">
   <h2>Choose User to Edit:</h2>
   <table>
@@ -366,8 +366,18 @@ function display_management_user_selection($conn, $users, $request) { ?>
         '">Edit</button></td>';
       echo '<td><button type="submit" name="hours" value="' . $user['id'] .
         '">Lookup / Change Hours</button></td>';
-      echo '<td><button type="submit" name="logout" value="' . $user['id'] .
-        '">Logout</button></td>'; # Need to lookup if they're logged in, put in an IF statement.
+      $user_status = punch_check_status($conn, $user['id'], NULL, FALSE,
+        $request);
+      if( $user_status == "New User!" || $user_status == "Clocked out" ) {
+        echo '<td><select name="job_' . $user['id'] . '">' . get_jobs($conn)  .
+               '</select></td>
+              <td><button type="submit" name="logout" value="' . $user['id'] .
+             '">Login</button></td>';
+      } else {
+        echo '<td>&nbsp;</td>
+              <td><button type="submit" name="logout" value="' . $user['id'] .
+             '">Logout</button></td>';
+      }
     echo "</tr>";
   }
   echo "</table></form>";
