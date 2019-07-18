@@ -60,7 +60,7 @@ CREATE TABLE timecards(
   time_out    DATETIME,
   user_id     INT NOT NULL,
   job_id      INT NOT NULL,
-  role_id     INT DEFAULT NULL,
+  role_id     INT NOT NULL,
   PRIMARY KEY (id),
   KEY (time_in),
   KEY (time_out),
@@ -108,11 +108,11 @@ VALUES
 
 INSERT INTO roles(name, description)
 VALUES
-  ('volunteer','A new or regular at FreeGeek who has not been assigned another role.'),
-  ('employee','A FreeGeek employee.'),
-  ('regular','Somebody who volunteers regularly.'),
-  ('board','A member of the FreeGeek board.'),
-  ('dev','Somebody who programs for FreeGeek.'),
-  ('sysadmin','Somebody who is responsible for FreeGeek\'s IT infrastructure.'),
-  ('admin','A timecard admin.'),
-  ('trainee','A user who hasn\'t been promoted by an admin.');
+  ('Trainee','A user who hasn\'t been promoted by an admin.'),
+  ('Volunteer','A new or regular at FreeGeek who has not been assigned another role.'),
+  ('Employee','A FreeGeek employee.'),
+  ('Regular','Somebody who volunteers regularly.'),
+  ('Board','A member of the FreeGeek board.'),
+  ('Dev','Somebody who programs for FreeGeek.'),
+  ('Sysadmin','Somebody who is responsible for FreeGeek\'s IT infrastructure.'),
+  ('Timecard Admin','A timecard admin.');

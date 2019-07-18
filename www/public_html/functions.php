@@ -69,6 +69,21 @@ function insert_user($conn, $data) {
   $stmt->bindParam(':email',      $data['email']);
   $stmt->bindParam(':phone',      $data['phone']);
   $stmt->execute();
+
+  # Get the user inserted
+  $id = $conn->lastInsertID();
+
+  # Get the Trainee ID from roles
+  $stmt = $conn->query("SELECT id FROM roles WHERE name = 'Trainee'");
+  $result = $stmt->fetch(PDO::FETCH_ASSOC);
+  $role_id = $result['id'];
+
+  # Insert a default role for the new user
+  $stmt = $conn->prepare("INSERT INTO role_to_user(role_id, user_id, main)
+                          VALUES (:role, :user, TRUE)");
+  $stmt->bindParam(':role', $role_id);
+  $stmt->bindParam(':user', $id);
+  $stmt->execute();
 }
 
 # The logic for checking status or punching in are almost the same.
@@ -91,11 +106,21 @@ function punch_check_status( $conn, $userid, $job, $punch, $request ) {
   # If the user has never clocked in
   if(! isset($result['t_id']) ){
     if($punch) {
+      # Get the current primary role for the user
+      $stmt = $conn->prepare("SELECT role_id FROM role_to_user
+                              WHERE user_id = :userid
+                              AND main is TRUE");
+      $stmt->bindParam(':userid', $userid);
+      $stmt->execute();
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      $role_id = $result['role_id'];
+
       $stmt = $conn->prepare(
-        "INSERT INTO timecards( time_in, job_id, user_id )
-         VALUES ( current_timestamp(), :job_id, :user_id )");
+        "INSERT INTO timecards( time_in, job_id, user_id, role_id )
+         VALUES ( current_timestamp(), :job_id, :user_id, :role_id )");
       $stmt->bindParam(':user_id', $userid);
       $stmt->bindParam(':job_id', $job);
+      $stmt->bindParam(':role_id', $role_id);
       $stmt->execute();
     }
     return("New User!");
@@ -103,11 +128,22 @@ function punch_check_status( $conn, $userid, $job, $punch, $request ) {
   # logged out and a new punch card entry needs to be created.
   } elseif ( isset($result['time_in']) && isset($result['time_out'])) {
     if($punch) {
+      # Get the current primary role for the user
+      $stmt = $conn->prepare("SELECT role_id FROM role_to_user
+                              WHERE user_id = :userid
+                              AND main is TRUE");
+      $stmt->bindParam(':userid', $userid);
+      $stmt->execute();
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      $role_id = $result['role_id'];
+
+      # Insert the time punch
       $stmt = $conn->prepare(
-        "INSERT INTO timecards( time_in, user_id, job_id )
-         VALUES ( current_timestamp(), :user_id, :job_id)");
+        "INSERT INTO timecards( time_in, user_id, job_id, role_id )
+         VALUES ( current_timestamp(), :user_id, :job_id, :role_id )");
       $stmt->bindParam(':user_id', $userid);
       $stmt->bindParam(':job_id', $job);
+      $stmt->bindParam(':role_id', $role_id);
       $stmt->execute();
     }
     if(! $punch ) {
@@ -617,5 +653,86 @@ function log_everybody_out($conn) {
   # Should be wrapped in a try/catch
   $conn->query("UPDATE timecards SET time_out = now()
                 WHERE time_out IS NULL");
+}
+
+function edit_hours($conn, $userid, $num_punches){
+  # Get the names of the jobs
+  $query = "SELECT name FROM jobs";
+  $stmt = $conn->query($query);
+  $count=0;
+  while($results = $stmt->fetch(PDO::FETCH_ASSOC)){
+    $jobs[$count] = $results['name'];
+    $count++;
+  }
+
+  # Get the names of the roles 
+  $query = "SELECT name FROM roles";
+  $stmt = $conn->query($query);
+  $count=0;
+  while($results = $stmt->fetch(PDO::FETCH_ASSOC)){
+    $roles[$count] = $results['name'];
+    $count++;
+  }
+
+  # Get Individual Timecard Lines
+  $query="SELECT u.username AS username, u.first_name AS first_name,
+          u.last_name AS last_name,
+          t.time_in AS time_in, t.time_out AS time_out, t.id AS t_id,
+          j.name AS job, r.name AS role
+          FROM timecards t, jobs j, roles r, users u
+          WHERE t.user_id = :id
+          AND j.id = t.job_id
+          AND r.id = t.role_id
+          AND u.id = t.user_id
+          ORDER BY t.id DESC
+          LIMIT :limit";
+  $stmt = $conn->prepare($query);
+  $stmt->bindParam(":id", $userid);
+  $stmt->bindValue(":limit", intval($num_punches), PDO::PARAM_INT);
+  $stmt->execute();
+  $count=0;
+  echo '<div><form method="post" action="management.php">';
+  echo '<input type="hidden" name="edit_hours" value="true">';
+  while($results[$count] = $stmt->fetch(PDO::FETCH_ASSOC)){
+    # Only want to do this once
+    if($count==0){
+      echo "<h1>Editing values for 
+        {$results[$count]['username']}
+        {$results[$count]['first_name']}
+        {$results[$count]['last_name']}
+        </h1>";
+      echo "<h2>You may only update 1 row at a time.</h2>";
+      echo "<table>";
+    }
+    echo "<tr>";
+      echo "<td><input name=\"time_in\" type=\"text\"" .
+           " value=\"{$results[$count]['time_in']}\"></td>";
+      echo "<td><input name=\"time_out\" type=\"text\"" .
+           " value=\"{$results[$count]['time_out']}\"></td>";
+      echo "<td><select name=\"role\">";
+      $for_count=0;
+      foreach($jobs as $job){
+        echo "<option value=\"$job\"";
+        if( $results[$count]['job'] == $job ) {
+          echo ' selected="selected" ';
+        } 
+        echo ">$job</option>";
+        $for_count++;
+      }
+      echo "</select></td><td><select name=\"role\">";
+      $for_count=0;
+      foreach($roles as $role){
+        echo "<option value=\"$role\"";
+        if( $results[$count]['role'] == $role ) {
+          echo ' selected="selected" ';
+        } 
+        echo ">$role</option>";
+        $for_count++;
+      }
+      echo "</select></td>";
+    echo "</tr>";
+    $count++;
+  }
+  echo "</table></form></div>";
 }
 ?>

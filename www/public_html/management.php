@@ -54,6 +54,16 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
   } else {
     echo "<h1>Clocked out.</h1>";
   }
+  # Hours points to userid in this form.
+} elseif( isset($_POST['hours'])){
+  get_hours($conn, $_POST['hours'], "management");
+  if(isset($_POST['num_punches'])){
+    $num_punches = $_POST['num_punches'];
+  } else {
+    $num_punches = 20; # Default number of hours to pull
+  }
+  edit_hours($conn, $_POST['hours'], $num_punches);
+} elseif( isset($_POST['edit_hours'])){
 } elseif(! $request ) {
   $request="management";
   display_logout_all();
