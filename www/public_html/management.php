@@ -63,7 +63,8 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
     $num_punches = 20; # Default number of hours to pull
   }
   edit_hours($conn, $_POST['hours'], $num_punches);
-} elseif( isset($_POST['edit_hours'])){
+} elseif( isset($_POST['hours_submitted'])){
+  hours_submitted($conn, $_POST);
 } elseif(! $request ) {
   $request="management";
   display_logout_all();

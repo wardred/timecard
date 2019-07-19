@@ -657,20 +657,22 @@ function log_everybody_out($conn) {
 
 function edit_hours($conn, $userid, $num_punches){
   # Get the names of the jobs
-  $query = "SELECT name FROM jobs";
+  $query = "SELECT name, id FROM jobs";
   $stmt = $conn->query($query);
   $count=0;
   while($results = $stmt->fetch(PDO::FETCH_ASSOC)){
-    $jobs[$count] = $results['name'];
+    $jobs[$count]['name'] = $results['name'];
+    $jobs[$count]['id'] = $results['id'];
     $count++;
   }
 
   # Get the names of the roles 
-  $query = "SELECT name FROM roles";
+  $query = "SELECT name, id FROM roles";
   $stmt = $conn->query($query);
   $count=0;
   while($results = $stmt->fetch(PDO::FETCH_ASSOC)){
-    $roles[$count] = $results['name'];
+    $roles[$count]['name'] = $results['name'];
+    $roles[$count]['id'] = $results['id'];
     $count++;
   }
 
@@ -690,6 +692,7 @@ function edit_hours($conn, $userid, $num_punches){
   $stmt->bindParam(":id", $userid);
   $stmt->bindValue(":limit", intval($num_punches), PDO::PARAM_INT);
   $stmt->execute();
+
   $count=0;
   echo '<div><form method="post" action="management.php">';
   echo '<input type="hidden" name="edit_hours" value="true">';
@@ -705,34 +708,81 @@ function edit_hours($conn, $userid, $num_punches){
       echo "<table>";
     }
     echo "<tr>";
-      echo "<td><input name=\"time_in\" type=\"text\"" .
-           " value=\"{$results[$count]['time_in']}\"></td>";
-      echo "<td><input name=\"time_out\" type=\"text\"" .
-           " value=\"{$results[$count]['time_out']}\"></td>";
-      echo "<td><select name=\"role\">";
+      $t_id = $results[$count]['t_id'];
+      echo "<td><input name=\"time_in_$t_id\"
+            type=\"text\"" .
+           " value=\"{$results[$count]['time_in']}\">";
+      echo '<input type="hidden" name="time_in_orig_' . $t_id .
+           '" value="' . $results[$count]['time_in'] . '"></td>';
+      echo "<td><input name=\"time_out_$t_id\"
+            type=\"text\"" .
+           " value=\"{$results[$count]['time_out']}\">";
+      echo '<input type="hidden" name="time_out_orig_' . $t_id .
+           '" value="' . $results[$count]['time_out'] . '"></td>';
+      echo "<td><select name=\"job_$t_id\">";
       $for_count=0;
       foreach($jobs as $job){
-        echo "<option value=\"$job\"";
-        if( $results[$count]['job'] == $job ) {
+        echo "<option value=\"{$job['id']}\" label=\"{$job['name']}\"";
+        if( $results[$count]['job'] == $job['name'] ) {
           echo ' selected="selected" ';
+          $job_orig = $job['id'];
         } 
-        echo ">$job</option>";
+        echo ">{$job['name']}</option>";
         $for_count++;
       }
-      echo "</select></td><td><select name=\"role\">";
+      echo "</select>";
+      echo '<input type="hidden" name="job_orig_' . $t_id .
+           '" value="' . $job_orig . '">';
+      echo "</td><td>
+            <select name=\"role_$t_id\">";
       $for_count=0;
       foreach($roles as $role){
-        echo "<option value=\"$role\"";
-        if( $results[$count]['role'] == $role ) {
+        echo "<option value=\"{$role['id']}\" label=\"{$role['name']}\"";
+        if( $results[$count]['role'] == $role['name'] ) {
           echo ' selected="selected" ';
+          $role_orig = $role['id'];
         } 
-        echo ">$role</option>";
+        echo ">{$role['name']}</option>";
         $for_count++;
       }
-      echo "</select></td>";
+      echo "</select>";
+      echo '<input type="hidden" name="role_orig_' . $t_id .
+           '" value="' . $role_orig . '">';
+      echo '</td><td><button type="submit" value="' . $t_id .
+           '" name="hours_submitted">Submit</button></td>';
     echo "</tr>";
     $count++;
   }
   echo "</table></form></div>";
+}
+
+function hours_submitted($conn, $submitted){
+  $time_id = $submitted['hours_submitted'];
+  if( $submitted["time_in_$time_id"] ==
+        $submitted["time_in_orig_$time_id"] &&
+      $submitted["time_out_$time_id"] ==
+        $submitted["time_out_orig_$time_id"] &&
+      $submitted["role_$time_id"] ==
+        $submitted["role_orig_$time_id"] &&
+      $submitted["job_$time_id"] ==
+        $submitted["job_orig_$time_id"] ){
+    echo '<div class="warn">There weren\'t any changes.</div>';
+  } else {
+    $stmt = $conn->prepare("UPDATE timecards
+                            SET time_in = :time_in,
+                            time_out = :time_out,
+                            job_id = :job_id,
+                            role_id = :role_id
+                            WHERE id = :time_id");
+    $stmt->bindParam(':time_in', $submitted["time_in_$time_id"]);
+    $stmt->bindParam(':time_out', $submitted["time_out_$time_id"]);
+    $stmt->bindValue(":role_id", intval($submitted["role_$time_id"]),
+                     PDO::PARAM_INT );
+    $stmt->bindValue(":job_id", intval($submitted["job_$time_id"]),
+                     PDO::PARAM_INT );
+    $stmt->bindValue(":time_id", intval($time_id), PDO::PARAM_INT);
+    $stmt->execute();
+    echo '<div class="info">Hours updated.</div>';
+  }
 }
 ?>
