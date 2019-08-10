@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <?php require 'header.php';
       require 'functions.php';
+      require 'authorize.php';
+
+authorize($conn);
 
 $request=NULL;
 ?>

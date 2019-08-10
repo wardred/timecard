@@ -23,7 +23,7 @@ function validate_new_user($conn, $data) {
   $stmt->execute();
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
   if($result['count'] > 0) {
-    throw new Exception('<div class="error">The username ' . $data['username'] . 
+    throw new Exception('<div class="error">The username '. $data['username'] .
                         ' already exists!</div>');
   }
 
@@ -585,7 +585,7 @@ function update_user($conn, $post) {
     $updates['last_name'] = $post['last_name'];
   }
   if( $post['password'] ) {
-    $updates['password'] = $post['password'];
+    $updates['password'] = password_hash($post['password'], PASSWORD_DEFAULT);
   }
   if( $post['phone'] != $post['orig_phone'] ) {
     $updates['phone'] = $post['phone'];
