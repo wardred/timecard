@@ -3,13 +3,22 @@
       require 'functions.php';
       require 'authorize.php';
 
+if(! isset($_SESSION)){
+  session_start();
+}
+
 authorize($conn);
+
+if( isset($_SESSION['logged_in']) && ($_SESSION['logged_in'])){
+  echo '<td><a href="logout.php">Logout</a></td>';
+}
 
 $request=NULL;
 ?>
 <html lang="en">
 <head>
   <title>FreeGeek Timecard Management Screen</title>
+  <link rel="stylesheet" type="text/css" href="style/main.css">
 </head>
 <body>
   <div class="head"><h1><a href="index.php">FreeGeek Timecard</a> -

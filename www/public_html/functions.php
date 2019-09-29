@@ -694,7 +694,8 @@ function edit_hours($conn, $userid, $num_punches){
   $stmt->execute();
 
   $count=0;
-  echo '<div><form method="post" action="management.php">';
+  echo '<div class="form_container">
+        <form method="post" action="management.php">';
   echo '<input type="hidden" name="edit_hours" value="true">';
   while($results[$count] = $stmt->fetch(PDO::FETCH_ASSOC)){
     # Only want to do this once

@@ -5,23 +5,24 @@
 <html lang="en">
 <head>
   <title>FreeGeek New User Form</title>
+  <link rel="stylesheet" type="text/css" href="style/main.css">
   <meta http-equiv="refresh"
         content="180; url=http://timecard.freegeektwincities.org/index.php">
 </head>
 <body>
   <div class="head"><h1><a href="index.php">FreeGeek</a> - 
                         <a href="create.php">New User Form</a></h1></div>
-  <div>Not creating an account?
+  <div class="text">Not creating an account?
        <a href="index.php">Return to the Free Geek Timecard Homepage.</a>
   </div>
   <h2>User Input:</h2>
   <div class="form_container">
     <form method="post"
           action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-      <div class="labels-red">* - Required Fields</div><br>
-      <div class="labels">User Name:</div>
+      <div class="required">* - Required Fields</div><br>
+      <div class="required">User Name:</div>
       <div class="inputs"><input type="text" name="username" tabindex="1" autofocus="autofocus" required>*</div><br>
-      <div class="labels">First Name:</div>
+      <div class="required">First Name:</div>
       <div class="inputs"><input type="text" name="first_name" tabindex="2" required>*</div><br>
       <div class="labels">Last Name:</div>
       <div class="inputs"><input type="text" name="last_name" tabindex="3"></div><br>

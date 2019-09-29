@@ -19,19 +19,17 @@ function authorize($conn){
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     #throw new Exception("username: {$result['username']}");
     if($stmt->rowCount() != 1){
-#      throw new Exception('<div class="error">
-#                             Invalid username or password.</div>');
       header('WWW-Authenticate: Basic realm="Login Required"');
       header('HTTP/1.0 401 Unauthorized');
       die ("Invalid username or password");
     }
 
     if(password_verify($tmp_pass, $result['password'])){
-      session_start();
-      #throw new Exception('STARTED!');
+      if(! isset($_SESSION)){
+        session_start();
+      }
+      $_SESSION['logged_in']=TRUE;
     } else {
-      #throw new Exception('<div class="error">
-      #                      Invalid username or password.</div>');
       header('WWW-Authenticate: Basic realm="Login Required"');
       header('HTTP/1.0 401 Unauthorized');
       die("Invalid username or password");
