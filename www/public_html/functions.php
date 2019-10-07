@@ -923,7 +923,7 @@ function display_jobs($conn){
     $count++;
   }
   echo '<tr>
-          <td>Create New Role:</td>
+          <td>Create New Job:</td>
           <td><input name="new_id[' . $count . ']" type="hidden" value="-1">
               <input type="text" name="new_name[' . $count . ']"></td>
           <td><input type="text" name="new_description[' . $count . ']"></td>
@@ -953,7 +953,7 @@ function process_jobs($conn){
         $stmt->bindParam(':active', $_POST['new_active'][$count]);
         
         if($stmt->execute()){
-          echo '<br><td class="info">Role ' .
+          echo '<br><td class="info">Job ' .
                 $_POST['orig_name'][$count] . ' successfully updated.</td>';
         } else {
           echo '<td class="error">There was a problem updating the jobs.  Please contact the system maintainers and let them know!.</td>';
