@@ -80,11 +80,14 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
   hours_submitted($conn);
 } elseif(isset($_POST['modify_roles'])){
   process_roles($conn);
+} elseif(isset($_POST['modify_jobs'])){
+  process_jobs($conn);
 } elseif(! $request ) {
   $request="management";
   display_logout_all();
   display_lookup_form($request);
   display_roles($conn);
+  display_jobs($conn);
 }
 ?>
   </div>

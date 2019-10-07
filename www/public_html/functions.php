@@ -849,27 +849,13 @@ function process_roles($conn){
         $stmt->bindParam(':name', $_POST['new_name'][$count]);
         $stmt->bindParam(':description', $_POST['new_description'][$count]);
         $stmt->bindParam(':active', $_POST['new_active'][$count]);
-        /*if($_POST['new_active'][$count] == "1"){
-          $istrue=TRUE;
-          $stmt->bindParam(':active', $istrue);
-        } else {
-          $istrue=FALSE;
-          $stmt->bindParam(':active', $istrue);
-        }*/
+
         if($stmt->execute()){
           echo '<br><td class="info">Role ' .
                 $_POST['orig_name'][$count] . ' successfully updated.</td>';
         } else {
           echo '<td class="error">There was a problem updating the roles.  Please contact the system maintainers and let them know!.</td>';
         }
-        /*echo "<br><td>ORIG_ID={$_POST['orig_id'][$count]}<td><br>";
-        echo "<td>ORIG_NAME={$_POST['orig_name'][$count]}<td><br>";
-        echo "<td>ORIG_DESCRIPTION={$_POST['orig_description'][$count]}<td><br>";
-        echo "<td>ORIG_ACTIVE={$_POST['orig_active'][$count]}<td><br>";
-        echo "<td>NEW_ID={$_POST['new_id'][$count]}<td><br>";
-        echo "<td>NEW_NAME={$_POST['new_name'][$count]}<td><br>";
-        echo "<td>NEW_DESCRIPTION={$_POST['new_description'][$count]}<td><br>";
-        echo "<td>NEW_ACTIVE={$_POST['new_active'][$count]}<td><br>";*/
     }
     $count++;
   }
@@ -901,5 +887,107 @@ function process_roles($conn){
       echo '<td class="warn">When creating a new role both name and description must be entered.</td>';
     }
   }
+}
+
+function display_jobs($conn){
+  $query="SELECT id, name, description, active FROM jobs";
+  $stmt = $conn->prepare($query);
+  $stmt->execute();
+  echo '<div class="role_container">';
+  echo '<form method="post"
+         action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '">';
+  echo "<table id='jobs'>";
+  echo '<caption>Jobs</caption>';
+  echo "<tr>
+          <th>&nbsp;</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Active</th>
+        </tr>";
+  $count=0;
+  while($result = $stmt->fetch(PDO::FETCH_ASSOC)){
+    echo '<tr><td><input type="hidden" name="orig_id[' . $count . ']" value="' . $result['id']  .'">';
+    echo '<input type="hidden" name="orig_name[' . $count . ']" value="' . $result['name']  .'">';
+    echo '<input type="hidden" name="orig_description[' . $count . ']" value="' . $result['description']  .'">';
+    echo '<input type="hidden" name="orig_active[' . $count . ']" value="' . $result['active']  .'">';
+    echo '&nbsp;</td>
+            <td><input name="new_id[' . $count . ']" type="hidden" value="' . $result['id'] . '">
+                <input type="text" name="new_name[' . $count . ']" value="' . $result['name']  . '"></td>
+            <td><input type="text" name="new_description[' . $count . ']" value="' . $result['description'] . '"></td>';
+            if($result['active'] == 1){
+              echo '<td><input type="checkbox" name="new_active[' . $count . ']" checked></td>';
+            } else {
+              echo '<td><input type="checkbox" name="new_active[' . $count . ']"></td>';
+            }
+          echo '</tr>';
+    $count++;
+  }
+  echo '<tr>
+          <td>Create New Role:</td>
+          <td><input name="new_id[' . $count . ']" type="hidden" value="-1">
+              <input type="text" name="new_name[' . $count . ']"></td>
+          <td><input type="text" name="new_description[' . $count . ']"></td>
+          <td><input type="checkbox" name="new_active[' . $count . ']" checked></td>
+        </tr>';
+  echo "</table><div class=\"submit\"><input type=\"submit\" name=\"modify_jobs\"></div></form></div>";
+}
+
+function process_jobs($conn){
+  $count=0;
+  $update="UPDATE jobs SET name=:name, description=:description, active=:active WHERE id=:id";
+  #echo '<td>' . var_dump($_POST) . '</td>';
+  foreach($_POST['orig_id'] as $id){
+    if( isset($_POST['new_active'][$count])){
+      $_POST['new_active'][$count] = "1";
+    } else {
+      $_POST['new_active'][$count] = "0";
+    } 
+    if( $_POST['orig_id'][$count] != $_POST['new_id'][$count] ||
+        $_POST['orig_name'][$count] != $_POST['new_name'][$count] ||
+        $_POST['orig_description'][$count] != $_POST['new_description'][$count] ||      
+        $_POST['orig_active'][$count] != $_POST['new_active'][$count] ){
+        $stmt = $conn->prepare($update); 
+        $stmt->bindParam(':id', $_POST['new_id'][$count]);
+        $stmt->bindParam(':name', $_POST['new_name'][$count]);
+        $stmt->bindParam(':description', $_POST['new_description'][$count]);
+        $stmt->bindParam(':active', $_POST['new_active'][$count]);
+        
+        if($stmt->execute()){
+          echo '<br><td class="info">Role ' .
+                $_POST['orig_name'][$count] . ' successfully updated.</td>';
+        } else {
+          echo '<td class="error">There was a problem updating the jobs.  Please contact the system maintainers and let them know!.</td>';
+        }
+    }   
+    $count++;
+  } 
+  
+  if(isset($_POST['new_name'][$count]) &&
+           $_POST['new_name'][$count] != ""){
+    if(isset($_POST['new_description'][$count]) &&
+             $_POST['new_description'][$count] != ""){
+      $insert="INSERT INTO jobs(name, description, active)
+               VALUES(:name,:description,:active)";
+
+      if( isset($_POST['new_active'][$count])){
+        $_POST['new_active'][$count] = "1";
+      } else {
+        $_POST['new_active'][$count] = "0";
+      } 
+      
+      $stmt = $conn->prepare($insert);
+      $stmt->bindParam(':name', $_POST['new_name'][$count]);
+      $stmt->bindParam(':description', $_POST['new_description'][$count]);
+      $stmt->bindParam(':active', $_POST['new_active'][$count]);
+      if($stmt->execute()){
+        echo '<br><td class="info">New job' .
+             $_POST['new_name'][$count] . ' successfully created.</td>';
+      } else {
+        echo '<td class="error">There was a problem creating the job.  Please contact the system maintainers and let them know!.</td>';
+      }
+    } else {
+      echo '<td class="warn">When creating a new job both name and description must be entered.</td>';
+    }
+  } 
 }
 ?>
