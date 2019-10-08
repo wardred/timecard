@@ -104,7 +104,8 @@ VALUES
   ('Build','Build desktops, laptops, etc.'),
   ('Housekeeping','Help clean up FreeGeek.'),
   ('Test','Test RAM, HDs, etc.'),
-  ('Learning','Somebody getting shown the ropes at FreeGeek.');
+  ('Learning','Somebody getting shown the ropes at FreeGeek.'),
+  ('Imported','Imported Hours from Old Sign In System');
 
 INSERT INTO roles(name, description)
 VALUES
