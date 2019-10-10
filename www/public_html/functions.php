@@ -980,7 +980,7 @@ function process_jobs($conn){
       $stmt->bindParam(':description', $_POST['new_description'][$count]);
       $stmt->bindParam(':active', $_POST['new_active'][$count]);
       if($stmt->execute()){
-        echo '<br><td class="info">New job' .
+        echo '<br><td class="info">New job ' .
              $_POST['new_name'][$count] . ' successfully created.</td>';
       } else {
         echo '<td class="error">There was a problem creating the job.  Please contact the system maintainers and let them know!.</td>';
