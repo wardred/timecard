@@ -13,3 +13,9 @@ empty_db
 www/config.php
     - A config file with default configuration parameters.
       CHANGE THESE!
+
+# load db
+``
+cd empty_db/
+./import-data.sh
+``
