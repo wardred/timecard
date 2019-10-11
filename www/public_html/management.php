@@ -25,7 +25,7 @@ if( isset($_SESSION['logged_in']) && ($_SESSION['logged_in'])){
   <div class="head"><h1><a href="index.php">FreeGeek Timecard</a> -
                         <a href="management.php">Management</a></h1>
   </div>
-  <div>
+  <!--<div>-->
 <?php
 if( $_SERVER["REQUEST_METHOD"] == "POST"
     && isset( $_POST['lookup']) ){
@@ -34,7 +34,7 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
     echo "If you don't see the user you're looking for search again.";
     display_management_user_selection($conn, $users, "lookup");
   }
-  display_logout_all();
+  logged_in_users($conn);
   display_lookup_form("management");
 } elseif( isset($_POST['edit']) ){
   edit($conn, $_POST['edit'], true);
@@ -51,8 +51,12 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
 } elseif( isset($_POST['logout_all']) ){
   log_everybody_out($conn);
   echo '<div class="info">Everybody logged out.</div>';
-  display_logout_all();
+  logged_in_users($conn);
   display_lookup_form($request);
+} elseif( $_SERVER['REQUEST_METHOD'] == "POST" &&
+          isset($_POST['logout_user'] )){
+  punch_check_status( $conn, $_POST['logout_user'], '', true, '');
+  echo "<div class=\"info\">{$_POST['username']} logged out.</div>";
 } elseif( $_SERVER['REQUEST_METHOD'] == "POST" &&
           isset($_POST['logout']) ) {
   $jobid = "job_" . $_POST['logout'];
@@ -84,7 +88,7 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
   process_jobs($conn);
 } elseif(! $request ) {
   $request="management";
-  display_logout_all();
+  logged_in_users($conn);
   display_lookup_form($request);
   display_roles($conn);
   display_jobs($conn);

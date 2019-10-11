@@ -642,12 +642,53 @@ function update_user($conn, $post) {
   return ($stmt->execute());
 }
 
-function display_logout_all() {?>
-  <form method="post" action="management.php">
+function logged_in_users($conn) {
+  $query="SELECT u.id AS id, t.time_in as time_in, u.username AS username,
+                 u.first_name AS first_name, u.last_name AS last_name
+          FROM users u, timecards t
+          WHERE u.id = t.user_id
+          AND time_out IS NULL";
+  $count=0;
+?>
+  <div class="logged_in_users">
+    <form method="post" action="management.php">
+    <table>
+<?php
+  $stmt = $conn->query($query);
+  while($results=$stmt->fetch(PDO::FETCH_ASSOC)){
+    if($count == 0){?>
+      <caption>Logged In Users</caption>
+      <tr>
+        <th>Time In</th><th>Username</th><th>First Name</th>
+        <th>Last Name</th><th>Logout</th>
+      </tr>
+     <?php }
+    echo "<tr>
+            <td><input type=\"hidden\" name=\"username\"
+                 value=\"{$results['username']}\">
+                {$results['time_in']}</td>
+            <td>{$results['username']}</td>
+            <td>{$results['first_name']}</td>
+            <td>{$results['last_name']}</td>
+            <td>
+              <button type=\"submit\"
+                      name=\"logout_user\" value=\"{$results['id']}\">
+                Logout</button>
+            </td>
+          </tr>";
+    $count++;
+  }
+  if ($count === 0){
+    echo '<tr><td>Nobody Logged In</td></tr></table></form></div>';
+  } else { ?>
+    </table></form>
+  <div class="logout_all"><form method="post" action="management.php">
     <button type="submit" name="logout_all" value='true'>
      Log Everybody Out</button>
-  </form>
+  </form></div>
+  </div>
 <?php }
+}
 
 function log_everybody_out($conn) {
   # Should be wrapped in a try/catch
@@ -929,7 +970,7 @@ function display_jobs($conn){
           <td><input type="text" name="new_description[' . $count . ']"></td>
           <td><input type="checkbox" name="new_active[' . $count . ']" checked></td>
         </tr>';
-  echo "</table><div class=\"submit\"><input type=\"submit\" name=\"modify_jobs\"></div></form></div>";
+  echo "</table><div class=\"submit\"><input type=\"submit\" name=\"modify_jobs\"></div></form>";
 }
 
 function process_jobs($conn){
