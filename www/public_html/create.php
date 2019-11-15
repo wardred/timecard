@@ -13,7 +13,7 @@
   <div class="head"><h1><a href="index.php">FreeGeek</a> - 
                         <a href="create.php">New User Form</a></h1></div>
   <div class="text">Not creating an account?
-       <a href="index.php">Return to the Free Geek Timecard Homepage.</a>
+       <a href="index.php">Return to the Free Geek Volunteer Timesheet Homepage.</a>
   </div>
   <h2>User Input:</h2>
   <div class="form_container">

@@ -4,7 +4,7 @@
 ?>
 <html lang="en">
 <head>
-  <title>FreeGeek Timecard User Screen</title>
+  <title>FreeGeek Timesheet User Screen</title>
   <link rel="stylesheet" type="text/css" href="style/main.css">
   <meta http-equiv="refresh"
         content="180;url=http://timecard.freegeektwincities.org/index.php">
@@ -16,16 +16,16 @@ $request=NULL;
 if( ( isset($_GET['checkin']) && $_GET['checkin'] == 'true') ||
     ( isset($_POST['request']) && $_POST['request'] == 'checkin') ){
   ?> <h1><a href="index.php">FreeGeek</a> - 
-      <a href="user.php?checkin=true">Time Clock</a></h1>
+      <a href="user.php?checkin=true">Volunteer Timesheet</a></h1>
   <div class="text">Not checking in?
-       <a href="index.php">Return to the Free Geek Timecard Homepage.</a>
+       <a href="index.php">Return to the Free Geek Timesheet Homepage.</a>
   </div> <?php
   $request="checkin";
 } else { # Should probably make this part of the if else blocks below
   ?> <h1><a href="index.php">FreeGeek</a> - 
-      <a href="user.php?hours=true">Time Clock</a></h1>
+      <a href="user.php?hours=true">Volunteer Timesheet</a></h1>
   <div class="text">Not checking hours?
-       <a href="index.php">Return to the Free Geek Timecard Homepage.</a>
+       <a href="index.php">Return to the Free Geek Timesheet Homepage.</a>
   </div> <?php
   $request="hours";
 }

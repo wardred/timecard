@@ -13,7 +13,7 @@ $request=NULL;
 ?>
 <html lang="en">
 <head>
-  <title>FreeGeek Timecard Management Screen</title>
+  <title>FreeGeek Volunteer Timesheet Management Screen</title>
   <link rel="stylesheet" type="text/css" href="style/main.css">
 </head>
 <body>
@@ -22,7 +22,7 @@ if( isset($_SESSION['logged_in']) && ($_SESSION['logged_in'])){
   echo '<div class="logout"><a href="logout.php">Logout</a></div>';
 }
 ?>
-  <div class="head"><h1><a href="index.php">FreeGeek Timecard</a> -
+  <div class="head"><h1><a href="index.php">FreeGeek Volunteer Timesheet</a> -
                         <a href="management.php">Management</a></h1>
   </div>
   <!--<div>-->
@@ -46,7 +46,7 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
     echo '<div class="info">User Updated</div>';
   } else {
     echo '<div class="warn">Something went wrong.
-          Let the timecard maintainer know.</div>';
+          Let the timesheet maintainer know.</div>';
   }
 } elseif( isset($_POST['logout_all']) ){
   log_everybody_out($conn);
