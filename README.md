@@ -19,3 +19,9 @@ www/config.php
 cd empty_db/
 ./import-data.sh
 ``
+
+# Backups
+``
+cp -a maintenance_scripts/backups.sh /usr/local/sbin/
+crontab -e
+``

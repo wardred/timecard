@@ -1,7 +1,6 @@
 .item1 { grid-area: title; }
-.item2 { grid-area: newuser; }
 .item3 { grid-area: checkin; }
-.item4 { grid-area: lookup; }
+.item4 { grid-area: newuser; }
 .item5 { grid-area: hours; }
 .item6 { grid-area: management; }
 
@@ -9,8 +8,7 @@
   display: grid;
   grid-template-areas:
     'title title'
-    'newuser newuser'
-    'checkin lookup'
+    'checkin newuser'
     'hours management';
   grid-gap: 10px;
   background-color: #2196F3;
