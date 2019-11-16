@@ -10,7 +10,7 @@
 # and run crontab -e to run this nightly, say at 1am or so.
 
 
-BACKUP_DIR="/backups/"
+BACKUP_DIR="/backups"
 MYSQL_BACKUP_DIR="$BACKUP_DIR/mysql_dumps"
 CONFIG_FILES="/etc"
 SITE_DIR="/sites/freegeek_timecard"
