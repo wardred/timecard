@@ -81,17 +81,21 @@ if( $_SERVER["REQUEST_METHOD"] == "POST"
   }
   edit_hours($conn, $_POST['hours'], $num_punches);
 } elseif( isset($_POST['hours_submitted'])){
-  hours_submitted($conn);
+  #echo var_dump($_POST);
+  hours_submitted($conn,$_POST);
 } elseif(isset($_POST['modify_roles'])){
   process_roles($conn);
 } elseif(isset($_POST['modify_jobs'])){
   process_jobs($conn);
+} elseif( isset($_POST['contiguous_hours_report'])){
+  contiguous_hours_report($conn);
 } elseif(! $request ) {
   $request="management";
   logged_in_users($conn);
   display_lookup_form($request);
   display_roles($conn);
   display_jobs($conn);
+  display_reports();
 }
 ?>
   </div>

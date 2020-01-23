@@ -1031,4 +1031,23 @@ function process_jobs($conn){
     }
   } 
 }
+
+function display_reports(){
+  echo '<td class="reports"><h1>Reports</h1>
+          <form method="post"
+          action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '">
+            Enter integers: 1, 2, 10, etc.<br>
+            Show anybody logged in for more than <input type="text" name="at_least_hours"> hours.
+            <input type="hidden" name="contiguous_hours_report">
+          </form>
+        </td>';
+}
+
+function contiguous_hours_report($conn){
+  $query="SELECT u.username, ";
+  if( isset($_POST['at_least_hours']) && is_numeric($_POST['at_least_hours'])){
+  } else {
+    echo '<div class="warn">Hours must be entered, and only contain digits 0 - 9.</div>';
+  }
+}
 ?>
